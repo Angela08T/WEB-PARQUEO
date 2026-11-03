@@ -1,0 +1,827 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SICOE · Panel administrativo</title>
+<style>
+@font-face{font-family:"Fredoka";src:url("{{FREDOKA}}") format("woff2");font-weight:300 700;font-display:block}
+@font-face{font-family:"Jakarta";src:url("{{JAKARTA}}") format("woff2");font-weight:400 800;font-display:block}
+/* Panel de escritorio: barra lateral fija + contenido; colores de San Juan de Lurigancho con azul y amarillo de Transporte */
+:root{
+  --font:"Jakarta","Segoe UI",system-ui,sans-serif; --display:"Fredoka","Jakarta",sans-serif;
+  --bg:#F3F5F9; --surface:#FFFFFF; --surface-2:#F4F6FA; --surface-3:#E8ECF2; --text:#16203A; --text-2:#576079; --text-3:#8A92A6; --line:#E3E7EE;
+  --primary:#1A6FB5; --primary-2:#2AA7B8; --primary-soft:#E5F0FA; --on-primary-soft:#0F4C80;
+  --yel:#F7B500; --yel-2:#FFCB3D; --yel-soft:#FFF4D2; --yel-ink:#6B4C00;
+  --ok:#3F7A10; --ok-soft:#ECF6DD; --bad:#C8142A; --bad-soft:#FCE9EB; --warn:#A85600; --warn-soft:#FFF1DC;
+  --ink:#16203A; --side:#16203A; --side-2:#1F2B49; --side-text:#C9D1E3;
+  --c-qr:#1A6FB5; --c-ef:#E0A000; --c-de:#C8142A;
+  --rainbow:linear-gradient(90deg,#D7182A,#E5127D,#F39200,#F7B500,#8DBE22,#2AA7B8);
+  --e1:0 1px 2px rgba(22,32,58,.05),0 1px 3px rgba(22,32,58,.04); --e3:0 20px 40px -18px rgba(22,32,58,.35);
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0E1322; --surface:#161D30; --surface-2:#1C2439; --surface-3:#252F48; --text:#E6EAF3; --text-2:#A6AFC4; --text-3:#7C869C; --line:#283350;
+  --primary:#6FB0EE; --primary-soft:#173252; --on-primary-soft:#D3E7FB; --yel-soft:#3A2F0E; --yel-ink:#FFD666;
+  --ok:#9FD465; --ok-soft:#203317; --bad:#FF8A95; --bad-soft:#3E1A20; --warn:#FFB65C; --warn-soft:#3A2A12;
+  --side:#0A0F1C; --side-2:#141B2E; --c-qr:#3F8FDB; --c-ef:#C08A1C; --c-de:#E04E5C; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0E1322; --surface:#161D30; --surface-2:#1C2439; --surface-3:#252F48; --text:#E6EAF3; --text-2:#A6AFC4; --text-3:#7C869C; --line:#283350;
+  --primary:#6FB0EE; --primary-soft:#173252; --on-primary-soft:#D3E7FB; --yel-soft:#3A2F0E; --yel-ink:#FFD666;
+  --ok:#9FD465; --ok-soft:#203317; --bad:#FF8A95; --bad-soft:#3E1A20; --warn:#FFB65C; --warn-soft:#3A2A12;
+  --side:#0A0F1C; --side-2:#141B2E; --c-qr:#3F8FDB; --c-ef:#C08A1C; --c-de:#E04E5C; color-scheme:dark}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html,body{margin:0;height:100%}
+body{background:var(--bg);color:var(--text);font:400 14.5px/1.5 var(--font);-webkit-font-smoothing:antialiased}
+button,input,select{font:inherit;color:inherit}
+button{cursor:pointer;border:0;background:none}
+:focus-visible{outline:2px solid var(--primary);outline-offset:2px;border-radius:6px}
+svg.i{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round;flex:none}
+.tnum{font-variant-numeric:tabular-nums}
+
+/* ---------- Estructura ---------- */
+.shell{display:grid;grid-template-columns:256px 1fr;min-height:100vh}
+.side{position:sticky;top:0;height:100vh;background:linear-gradient(180deg,var(--side),color-mix(in srgb,var(--side) 82%,#000));color:var(--side-text);display:flex;flex-direction:column;padding:0 14px 16px}
+.side::before{content:"";display:block;height:4px;margin:0 -14px 22px;background:var(--rainbow)}
+.brand{display:flex;align-items:center;gap:12px;padding:0 8px 22px}
+.brand .mk{position:relative;width:42px;height:42px;border-radius:14px;background:#fff;display:grid;place-items:center;flex:none}
+.brand .mk::before{content:"";position:absolute;inset:0;border-radius:inherit;padding:2px;background:conic-gradient(#D7182A,#E5127D,#F39200,#F7B500,#8DBE22,#2AA7B8,#D7182A);-webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask-composite:exclude}
+.brand .mk b{font:700 23px/1 var(--display);background:linear-gradient(135deg,#1A6FB5,#2AA7B8);-webkit-background-clip:text;background-clip:text;color:transparent}
+.brand .mk::after{content:"";position:absolute;right:-3px;top:-3px;width:11px;height:11px;border-radius:50%;background:var(--yel);border:2px solid var(--side)}
+.brand h1{margin:0;font:700 24px/1 var(--display);letter-spacing:.03em;color:#fff}
+.brand small{display:block;font-size:11.5px;color:#8E99B3;margin-top:3px}
+.nav-l{font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:#6E7A96;margin:14px 10px 8px}
+.nav a{display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:12px;color:var(--side-text);text-decoration:none;font-weight:600;font-size:14px;position:relative;transition:background .15s,color .15s}
+.nav a:hover{background:var(--side-2);color:#fff}
+.nav a.on{background:linear-gradient(90deg,rgba(247,181,0,.16),var(--side-2) 75%);color:#fff}
+.nav a.on::before{content:"";position:absolute;left:-14px;top:9px;bottom:9px;width:4px;border-radius:0 4px 4px 0;background:var(--yel)}
+.nav a.on svg{color:var(--yel)}
+.nav .cnt{margin-left:auto;font-size:11.5px;font-weight:700;background:rgba(200,20,42,.9);color:#fff;border-radius:99px;padding:1px 8px}
+.nav .live{margin-left:auto;width:8px;height:8px;border-radius:50%;background:#7AD37A;box-shadow:0 0 0 0 rgba(122,211,122,.6);animation:pulse 2s infinite}
+@keyframes pulse{70%{box-shadow:0 0 0 7px rgba(122,211,122,0)}100%{box-shadow:0 0 0 0 rgba(122,211,122,0)}}
+.side-foot{margin-top:auto;display:grid;gap:12px}
+.muni{background:#fff;border-radius:14px;padding:10px 12px;display:grid;place-items:center}
+.muni img{width:150px}
+.me{display:flex;align-items:center;gap:10px;padding:8px;border-radius:12px;background:var(--side-2)}
+.me .av{width:34px;height:34px;border-radius:50%;background:var(--yel);color:#3A2A00;display:grid;place-items:center;font-weight:800;font-size:13px;flex:none}
+.me b{display:block;color:#fff;font-size:13px;line-height:1.2}
+.me small{color:#8E99B3;font-size:11.5px}
+.me button{margin-left:auto;color:#8E99B3;padding:6px;border-radius:8px}
+.me button:hover{color:#fff;background:rgba(255,255,255,.06)}
+
+.main{min-width:0;display:flex;flex-direction:column;background:radial-gradient(900px 360px at 75% -120px,color-mix(in srgb,var(--primary) 9%,transparent),transparent 70%)}
+.top{position:sticky;top:0;z-index:5;background:color-mix(in srgb,var(--bg) 88%,transparent);backdrop-filter:blur(10px);display:flex;align-items:center;gap:14px;padding:18px 32px;border-bottom:1px solid transparent}
+.top.sc{border-bottom-color:var(--line)}
+.top h2{margin:0;font:800 23px/1.15 var(--font);letter-spacing:-.02em}
+.top p{margin:2px 0 0;color:var(--text-2);font-size:13px}
+.top .grow{flex:1;min-width:0}
+.sync{display:flex;align-items:center;gap:8px;font-size:12.5px;color:var(--text-2);background:var(--surface);border:1px solid var(--line);padding:7px 12px;border-radius:99px;white-space:nowrap}
+.sync i{width:8px;height:8px;border-radius:50%;background:#46A84A}
+.ibtn{width:40px;height:40px;border-radius:12px;display:grid;place-items:center;color:var(--text-2);background:var(--surface);border:1px solid var(--line);position:relative}
+.ibtn:hover{color:var(--text)}
+.ibtn .dot{position:absolute;top:8px;right:9px;width:8px;height:8px;border-radius:50%;background:var(--bad);border:2px solid var(--surface)}
+.content{padding:8px 32px 40px;display:grid;grid-template-columns:minmax(0,1fr);gap:20px;align-content:start}
+.content > *,.g2 > *,.g2b > *,.kpis > *{min-width:0}
+.boceto{display:flex;align-items:center;gap:10px;background:var(--yel-soft);color:var(--yel-ink);border:1px solid color-mix(in srgb,var(--yel) 30%,transparent);border-radius:12px;padding:9px 14px;font-size:13px;font-weight:600}
+.boceto svg{width:18px;height:18px}
+
+/* ---------- Componentes ---------- */
+.card{background:var(--surface);border:1px solid var(--line);border-radius:18px;box-shadow:var(--e1)}
+.card-h{display:flex;align-items:center;gap:12px;padding:18px 20px 0}
+.card-h h3{margin:0;font-size:15.5px;font-weight:700}
+.card-h p{margin:2px 0 0;font-size:12.5px;color:var(--text-2)}
+.card-h .grow{flex:1;min-width:0}
+.card-b{padding:16px 20px 20px}
+.btn{text-decoration:none;display:inline-flex;align-items:center;justify-content:center;gap:8px;height:40px;padding:0 16px;border-radius:12px;font-weight:600;font-size:13.5px;white-space:nowrap;transition:filter .15s,background .15s}
+.btn svg{width:18px;height:18px}
+.btn-pri{background:var(--primary);color:#fff}
+.btn-pri:hover{filter:brightness(1.08)}
+.btn-yel{background:var(--yel);color:#2E2100}
+.btn-out{background:var(--surface);border:1px solid var(--line);color:var(--text)}
+.btn-out:hover{border-color:var(--text-3)}
+.btn-txt{color:var(--primary);height:34px;padding:0 10px}
+.chips{display:flex;gap:6px;flex-wrap:wrap}
+.chip{height:34px;padding:0 14px;border-radius:99px;border:1px solid var(--line);background:var(--surface);font-size:13px;font-weight:600;color:var(--text-2)}
+.chip.on{background:var(--ink);border-color:var(--ink);color:#fff}
+:root[data-theme="dark"] .chip.on{background:var(--primary);border-color:var(--primary);color:#06213D}
+.pill{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:700;padding:3px 10px;border-radius:99px;white-space:nowrap}
+.pill .d{width:6px;height:6px;border-radius:50%;background:currentColor}
+.pill.ok{background:var(--ok-soft);color:var(--ok)} .pill.bad{background:var(--bad-soft);color:var(--bad)} .pill.on{background:var(--primary-soft);color:var(--on-primary-soft)} .pill.off{background:var(--surface-3);color:var(--text-2)} .pill.yel{background:var(--yel-soft);color:var(--yel-ink)}
+.field{display:grid;gap:5px}
+.field label{font-size:12px;font-weight:600;color:var(--text-2)}
+.field input,.field select{height:40px;border:1px solid var(--line);background:var(--surface);border-radius:10px;padding:0 12px;outline:0;min-width:0}
+.field input:focus,.field select:focus{border-color:var(--primary);box-shadow:0 0 0 3px var(--primary-soft)}
+.search{display:flex;align-items:center;gap:8px;height:40px;border:1px solid var(--line);background:var(--surface);border-radius:10px;padding:0 12px;color:var(--text-3)}
+.search input{border:0;outline:0;background:transparent;width:100%;color:var(--text);text-transform:uppercase}
+.search input::placeholder{text-transform:none}
+
+/* KPI */
+.kpis{display:grid;grid-template-columns:1.35fr 1fr 1fr 1fr;gap:16px}
+.kpi{padding:18px 20px;display:grid;gap:6px;position:relative;overflow:hidden;transition:transform .2s,box-shadow .2s}
+.kpi:hover{transform:translateY(-2px);box-shadow:var(--e3)}
+.kpi .kv{display:flex;align-items:flex-end;justify-content:space-between;gap:10px;position:relative;z-index:1}
+.spark{width:92px;height:34px;flex:none;overflow:visible}
+.kpi .lb .ic,.kpi .lb{position:relative;z-index:1}
+.kpi .lb{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--text-2);font-weight:600}
+.kpi .lb .ic{width:30px;height:30px;border-radius:9px;display:grid;place-items:center}
+.kpi .lb .ic svg{width:17px;height:17px}
+.kpi b{font:700 32px/1.1 var(--display);letter-spacing:.005em;font-variant-numeric:tabular-nums}
+.kpi .dt{font-size:12.5px;color:var(--text-2)}
+.kpi .up{color:var(--ok);font-weight:700}
+.kpi.hero{background:var(--ink);color:#fff;border-color:transparent}
+.kpi.hero::after{content:"";position:absolute;right:-60px;top:-80px;width:220px;height:220px;border-radius:50%;background:radial-gradient(circle,rgba(247,181,0,.45),transparent 68%)}
+.kpi.hero::before{content:"";position:absolute;left:0;right:0;bottom:0;height:5px;background:var(--rainbow)}
+.kpi.hero .lb,.kpi.hero .dt{color:#C9D1E3;position:relative;z-index:1}
+.kpi.hero b{font-size:40px;position:relative;z-index:1}
+.kpi.hero .lb .ic{background:rgba(247,181,0,.16);color:var(--yel)}
+.kpi.hero .up{color:#B9E58A} .kpi .dn{color:#FF9AA4;font-weight:700}
+.ic.blue{background:var(--primary-soft);color:var(--primary)} .ic.yel{background:var(--yel-soft);color:#A07400} .ic.red{background:var(--bad-soft);color:var(--bad)} .ic.green{background:var(--ok-soft);color:var(--ok)}
+
+.g2{display:grid;grid-template-columns:1.6fr 1fr;gap:16px}
+.g2b{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+
+/* Gráficos */
+.chart{position:relative}
+.chart svg{display:block;width:100%;height:auto;overflow:visible}
+.chart .grid line{stroke:var(--line);stroke-width:1}
+.chart .ax{fill:var(--text-3);font-size:11px;font-family:var(--font)}
+.chart .bar{fill:url(#gBar);transition:opacity .15s}
+.chart .bar.now{fill:url(#gNow)}
+.chart .avg{stroke:var(--text-3);stroke-width:1.2;stroke-dasharray:4 4}
+.chart .avg-t{paint-order:stroke;stroke:var(--surface);stroke-width:5px;stroke-linejoin:round;fill:var(--text-2);font-size:11px;font-weight:700;font-family:var(--font)}
+.chart .bar.dim{opacity:.35}
+.chart .hit{fill:transparent;cursor:pointer}
+.tip{position:absolute;pointer-events:none;z-index:4;background:var(--ink);color:#fff;font-size:12.5px;border-radius:10px;padding:8px 11px;box-shadow:var(--e3);white-space:nowrap;transform:translate(-50%,-110%);opacity:0;transition:opacity .12s}
+.tip.on{opacity:1}
+.tip b{display:block;font-size:14px}
+:root[data-theme="dark"] .tip{background:#E6EAF3;color:#16203A}
+.mix{display:flex;height:16px;border-radius:6px;overflow:hidden;gap:2px;margin:6px 0 16px}
+.mix i{display:block;height:100%}
+.mix i:first-child{border-radius:6px 0 0 6px}.mix i:last-child{border-radius:0 6px 6px 0}
+.legend{display:grid;gap:10px}
+.legend div{display:flex;align-items:center;gap:10px;font-size:13.5px}
+.legend .sw{width:12px;height:12px;border-radius:3px;flex:none}
+.legend .v{margin-left:auto;font-weight:700;font-variant-numeric:tabular-nums}
+.legend .p{width:44px;text-align:right;color:var(--text-2);font-variant-numeric:tabular-nums}
+.occ{display:grid;gap:11px}
+.occ-r{display:grid;grid-template-columns:minmax(0,1fr) minmax(110px,1fr) 54px;gap:12px;align-items:center;font-size:13px}
+.occ-r span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--text-2)}
+.occ-r .tr{height:10px;border-radius:5px;background:var(--surface-3);overflow:hidden}
+.occ-r .tr i{display:block;height:100%;border-radius:5px;background:linear-gradient(90deg,var(--primary-2),var(--primary))}
+.occ-r .tr i.hi{background:linear-gradient(90deg,var(--yel-2),#F39200)}
+.occ-r b{text-align:right;font-variant-numeric:tabular-nums;font-size:12.5px}
+
+/* Dona de medios de pago */
+.pay{display:flex;align-items:center;gap:26px}
+.donut{width:156px;height:156px;flex:none}
+.donut circle{fill:none;stroke-width:15}
+.donut .bg{stroke:var(--surface-3)}
+.donut text{fill:var(--text);font-family:var(--display);font-weight:700;font-size:17px}
+.donut .s{fill:var(--text-2);font-family:var(--font);font-size:10.5px;font-weight:600}
+.pay .legend{flex:1;min-width:0}
+.minis{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:20px}
+.minis div{background:var(--surface-2);border-radius:14px;padding:12px 14px}
+.minis small{display:block;font-size:12px;color:var(--text-2);font-weight:600}
+.minis b{font:700 20px/1.2 var(--display);font-variant-numeric:tabular-nums}
+/* Ranking de cobradores */
+.rk{width:26px;height:26px;border-radius:8px;display:inline-grid;place-items:center;font-size:12px;font-weight:800;background:var(--surface-3);color:var(--text-2)}
+.rk.g1{background:linear-gradient(135deg,#FFD666,#F7B500);color:#3A2A00}.rk.g2{background:linear-gradient(135deg,#E8ECF2,#C9D1E3);color:#3D4660}.rk.g3{background:linear-gradient(135deg,#F6C99B,#D98A45);color:#4A2600}
+.share{display:flex;align-items:center;gap:10px;justify-content:flex-end}
+.share .tr{width:90px;height:7px;border-radius:4px;background:var(--surface-3);overflow:hidden}
+.share .tr i{display:block;height:100%;border-radius:4px;background:linear-gradient(90deg,var(--primary-2),var(--primary))}
+@media (max-width:1400px){.spark{display:none}}
+@media (max-width:560px){.pay{flex-direction:column}}
+
+/* Tablas */
+.tbl-w{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:13.5px}
+th{text-align:left;font-size:11.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--text-3);padding:10px 14px;border-bottom:1px solid var(--line);white-space:nowrap;background:var(--surface)}
+td{padding:12px 14px;border-bottom:1px solid var(--line);white-space:nowrap}
+tr:last-child td{border-bottom:0}
+tbody tr:hover td{background:var(--surface-2)}
+.r{text-align:right}
+.plate{display:inline-block;font-weight:800;letter-spacing:.06em;border:1.5px solid var(--text);border-top-width:4px;border-top-color:#2E6BC4;border-radius:6px;padding:1px 7px;font-size:12.5px;background:var(--surface)}
+.who{display:flex;align-items:center;gap:10px}
+.who .av{width:30px;height:30px;border-radius:50%;display:grid;place-items:center;font-size:11.5px;font-weight:800;flex:none}
+.muted{color:var(--text-2)}
+.pager{display:flex;align-items:center;justify-content:space-between;padding:12px 20px;border-top:1px solid var(--line);font-size:13px;color:var(--text-2)}
+.filters{display:grid;grid-template-columns:repeat(5,minmax(0,1fr)) auto;gap:12px;align-items:end;padding:18px 20px}
+
+/* En vivo */
+.zones{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:16px}
+.zone{padding:16px 18px}
+.zone-h{display:flex;align-items:flex-start;gap:10px;margin-bottom:12px}
+.zone-h b{display:block;font-size:13.5px}
+.zone-h small{color:var(--text-2);font-size:12px}
+.zone-h .pill{margin-left:auto}
+.spaces{display:grid;grid-template-columns:repeat(10,1fr);gap:5px}
+.sp{aspect-ratio:1;border-radius:7px;border:1.5px solid var(--line);display:grid;place-items:center;font-size:10.5px;font-weight:700;color:var(--text-3);position:relative;cursor:default}
+.sp.oc{background:var(--primary);border-color:var(--primary);color:#fff;cursor:pointer}
+.sp.lg{background:var(--yel);border-color:var(--yel);color:#3A2A00}
+.zbar{height:6px;border-radius:3px;background:var(--surface-3);overflow:hidden;margin-top:12px}
+.zbar i{display:block;height:100%;background:var(--primary);border-radius:3px}
+.leg-live{display:flex;gap:16px;font-size:12.5px;color:var(--text-2);align-items:center}
+.leg-live i{width:12px;height:12px;border-radius:4px;display:inline-block;vertical-align:-2px;margin-right:6px;border:1.5px solid var(--line)}
+
+/* Lista de actividad */
+.feed{display:grid}
+.fi{display:flex;align-items:center;gap:12px;padding:11px 0;border-bottom:1px solid var(--line)}
+.fi:last-child{border-bottom:0}
+.fi .ic{width:34px;height:34px;border-radius:50%;display:grid;place-items:center;flex:none}
+.fi .ic svg{width:17px;height:17px}
+.fi .mid{flex:1;min-width:0;font-size:13px}
+.fi .mid small{display:block;color:var(--text-2);font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.fi .amt{font-weight:700;font-variant-numeric:tabular-nums;font-size:13.5px}
+
+/* Modal */
+.scrim{position:fixed;inset:0;z-index:30;background:rgba(10,15,28,.5);display:grid;place-items:center;padding:20px;opacity:0;pointer-events:none;transition:opacity .2s}
+.scrim.on{opacity:1;pointer-events:auto}
+.modal{width:min(520px,100%);background:var(--surface);border-radius:22px;box-shadow:var(--e3);transform:translateY(10px);transition:transform .2s}
+.scrim.on .modal{transform:none}
+.modal-h{display:flex;align-items:center;gap:12px;padding:20px 22px 0}
+.modal-h h3{margin:0;font-size:17px;flex:1}
+.modal-b{padding:18px 22px;display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.modal-b .full{grid-column:1/-1}
+.modal-f{display:flex;justify-content:flex-end;gap:10px;padding:0 22px 20px}
+.toast{position:fixed;left:50%;bottom:24px;transform:translate(-50%,16px);z-index:60;background:var(--ink);color:#fff;padding:12px 18px;border-radius:12px;font-weight:600;font-size:13.5px;display:flex;gap:10px;align-items:center;opacity:0;pointer-events:none;transition:all .2s;box-shadow:var(--e3)}
+.toast.on{opacity:1;transform:translate(-50%,0)}
+.toast svg{color:var(--yel)}
+
+/* ---------- Login ---------- */
+.login{position:fixed;inset:0;z-index:50;display:grid;grid-template-columns:1.12fr 1fr;background:#F5F6FA;color:#16203A;color-scheme:light;transition:opacity .5s,visibility .5s;overflow:auto}
+.login.out{opacity:0;visibility:hidden;pointer-events:none}
+.login.out .lg-card{transform:translateY(-12px) scale(.98)}
+/* Lado ilustrado */
+.lg-art{position:relative;overflow:hidden;isolation:isolate;background:linear-gradient(160deg,#16203A 0%,#111A31 55%,#0C1428 100%);color:#fff;display:flex;flex-direction:column;gap:28px;padding:44px clamp(32px,5vw,72px) 40px;min-height:100vh}
+.lg-art .fx{position:absolute;pointer-events:none;z-index:-1}
+.lg-art .dots{inset:0;background-image:radial-gradient(rgba(255,255,255,.08) 1px,transparent 1.2px);background-size:24px 24px;-webkit-mask-image:radial-gradient(ellipse 80% 70% at 60% 45%,#000 20%,transparent 75%);mask-image:radial-gradient(ellipse 80% 70% at 60% 45%,#000 20%,transparent 75%)}
+.lg-art .o1{width:560px;height:560px;right:-200px;top:-220px;border-radius:50%;background:radial-gradient(circle,rgba(247,181,0,.42),transparent 64%);animation:drift 14s ease-in-out infinite alternate}
+.lg-art .o2{width:620px;height:620px;left:-260px;bottom:-280px;border-radius:50%;background:radial-gradient(circle,rgba(26,111,181,.8),transparent 64%);animation:drift 18s ease-in-out infinite alternate-reverse}
+.lg-art .o3{width:380px;height:380px;right:8%;bottom:14%;border-radius:50%;background:radial-gradient(circle,rgba(229,18,125,.22),transparent 66%)}
+@keyframes drift{to{transform:translate(-40px,30px) scale(1.06)}}
+.lg-art .rb{position:absolute;left:0;right:0;top:0;height:5px;background:var(--rainbow);z-index:2}
+.lg-head{display:flex;align-items:center;gap:18px}
+.lg-art .name{font:700 54px/1 var(--display);letter-spacing:.04em;display:flex;gap:3px;text-shadow:0 8px 30px rgba(0,0,0,.25)}
+.lg-art .name span:nth-child(1){color:#FF4A5C}.lg-art .name span:nth-child(2){color:#FF4FA3}.lg-art .name span:nth-child(3){color:#FFAA2E}.lg-art .name span:nth-child(4){color:#A6D94A}.lg-art .name span:nth-child(5){color:#4FD0E0}
+.lg-tag{padding-left:18px;border-left:1px solid rgba(255,255,255,.18);font-size:12.5px;line-height:1.35;color:#AEB9D3;font-weight:600;letter-spacing:.02em}
+.lg-mid{flex:1;display:flex;flex-direction:column;justify-content:center;max-width:620px}
+.lg-live{align-self:flex-start;display:inline-flex;align-items:center;gap:9px;font-size:12.5px;font-weight:700;color:#D6DDEE;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);padding:6px 13px 6px 11px;border-radius:99px;backdrop-filter:blur(8px)}
+.lg-live i{width:8px;height:8px;border-radius:50%;background:#7AD37A;animation:pulse 2s infinite}
+.lg-art h2{margin:18px 0 12px;font-size:clamp(30px,3.1vw,46px);font-weight:800;letter-spacing:-.03em;max-width:17ch;line-height:1.06}
+.lg-art h2 em{font-style:normal;white-space:nowrap;background:linear-gradient(90deg,#FFCB3D,#F39200 60%,#FF4FA3);-webkit-background-clip:text;background-clip:text;color:transparent}
+.lg-art .lg-mid > p{margin:0;color:#B7C1D8;max-width:44ch;font-size:15.5px;line-height:1.6}
+/* Composición de tarjetas flotantes */
+.scene{position:relative;height:280px;margin-top:40px;max-width:580px}
+.gl{position:absolute;background:linear-gradient(150deg,rgba(255,255,255,.12),rgba(255,255,255,.04));border:1px solid rgba(255,255,255,.14);border-radius:20px;backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);box-shadow:0 30px 60px -25px rgba(0,0,0,.55),inset 0 1px 0 rgba(255,255,255,.08);padding:16px 18px;color:#fff}
+.mk-row{display:flex;align-items:center;gap:9px;font-size:12.5px;font-weight:600;color:#C9D1E3}
+.mk-ic{width:28px;height:28px;border-radius:9px;display:grid;place-items:center;background:rgba(247,181,0,.18);color:var(--yel);flex:none}
+.mk-ic svg{width:16px;height:16px}
+.mk-ic.blue{background:rgba(79,160,230,.2);color:#7FC0F5}.mk-ic.green{background:rgba(122,211,122,.2);color:#8FE08F}
+.mk-up{margin-left:auto;font-size:11.5px;font-weight:800;color:#B9E58A;background:rgba(141,190,34,.16);padding:2px 8px;border-radius:99px}
+.mk-a{left:0;top:0;width:min(320px,58%);animation:float 7s ease-in-out infinite}
+.mk-big{display:block;font:700 34px/1.1 var(--display);margin:10px 0 12px;letter-spacing:.01em}
+.mk-bars{display:flex;align-items:flex-end;gap:5px;height:62px}
+.mk-bars i{flex:1;border-radius:4px 4px 2px 2px;background:linear-gradient(180deg,#4FA0E6,rgba(42,167,184,.55))}
+.mk-bars i.now{background:linear-gradient(180deg,#FFCB3D,#F39200)}
+.mk-b{right:0;top:58px;width:min(232px,46%);animation:float 8s ease-in-out -2s infinite}
+.mk-sp{display:grid;grid-template-columns:repeat(6,1fr);gap:5px;margin:12px 0 10px}
+.mk-sp i{aspect-ratio:1;border-radius:5px;border:1.5px solid rgba(255,255,255,.18)}
+.mk-sp i.o{background:#2F86D0;border-color:#2F86D0}.mk-sp i.y{background:var(--yel);border-color:var(--yel)}
+.mk-b small{font-size:11.5px;color:#AEB9D3}
+.mk-c{left:18%;bottom:-6px;display:flex;align-items:center;gap:11px;padding:11px 16px 11px 12px;border-radius:16px;animation:float 6s ease-in-out -4s infinite}
+.mk-c b{display:block;font-size:13px}.mk-c small{font-size:11.5px;color:#AEB9D3}
+@keyframes float{50%{transform:translateY(-10px)}}
+.lg-stats{display:flex;gap:12px;flex-wrap:wrap}
+.lg-stats > div{display:grid;grid-template-columns:auto auto;column-gap:10px;align-items:center;padding:12px 20px 12px 12px;border-radius:16px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);backdrop-filter:blur(8px)}
+.lg-stats > div > span{grid-row:span 2;width:40px;height:40px;border-radius:12px;display:grid;place-items:center;background:rgba(247,181,0,.14);color:var(--yel)}
+.lg-stats svg{width:20px;height:20px}
+.lg-stats b{font:700 22px/1.1 var(--display);color:#fff;align-self:end}
+.lg-stats small{font-size:12px;color:#AEB9D3;align-self:start}
+/* Lado del formulario */
+.lg-form{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;padding:56px 32px 24px;background:radial-gradient(circle at 85% 8%,rgba(247,181,0,.12),transparent 38%),radial-gradient(circle at 10% 95%,rgba(26,111,181,.10),transparent 40%),#F5F6FA}
+.lg-boceto{position:absolute;top:22px;right:24px;display:inline-flex;align-items:center;gap:8px;font-size:12px;font-weight:700;color:#6B4C00;background:#FFF4D2;border:1px solid #FBE3A0;padding:5px 12px;border-radius:99px;cursor:help}
+.lg-boceto i{width:7px;height:7px;border-radius:50%;background:#F7B500}
+.lg-card{width:min(430px,100%);background:#fff;border:1px solid #E7EAF1;border-radius:26px;padding:34px 34px 26px;display:grid;gap:18px;position:relative;overflow:hidden;box-shadow:0 40px 80px -40px rgba(22,32,58,.35),0 2px 6px rgba(22,32,58,.04);transition:transform .5s}
+.lg-card::before{content:"";position:absolute;left:0;right:0;top:0;height:5px;background:var(--rainbow)}
+.lg-card > img{width:190px;justify-self:center;margin:6px 0 2px}
+.lg-title{text-align:center;display:grid;gap:6px}
+.eyebrow{justify-self:center;font-size:11px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:#1A6FB5;background:#E8F1FB;padding:4px 11px;border-radius:99px}
+.lg-title h3{margin:4px 0 0;font-size:27px;font-weight:800;letter-spacing:-.03em;line-height:1.15}
+.lg-title p{margin:0;color:#667089;font-size:14px}
+.lg-f{display:grid;gap:7px}
+.lg-f > label{font-size:12.5px;font-weight:700;color:#3D4660}
+.inp{position:relative;display:flex;align-items:center}
+.inp > span{position:absolute;left:15px;color:#9AA2B5;display:grid;pointer-events:none;transition:color .15s}
+.inp > span svg{width:19px;height:19px}
+.inp input{width:100%;height:52px;border:1.5px solid #E1E5EC;background:#F7F8FB;border-radius:14px;padding:0 48px 0 46px;font-size:15px;color:#16203A;outline:0;transition:border-color .15s,box-shadow .15s,background .15s}
+.inp input::placeholder{color:#A3AABB}
+.inp input:hover{border-color:#CDD3DE}
+.inp input:focus{background:#fff;border-color:#1A6FB5;box-shadow:0 0 0 4px rgba(26,111,181,.12)}
+.inp:focus-within > span{color:#1A6FB5}
+.inp .eye{position:absolute;right:8px;width:38px;height:38px;border-radius:10px;display:grid;place-items:center;color:#8A92A6}
+.inp .eye:hover{background:#EEF1F6;color:#16203A}
+.inp .eye svg{width:19px;height:19px}
+.err{display:none;font-size:12.5px;font-weight:600;color:#C8142A}
+.lg-f.bad .err{display:block}
+.lg-f.bad input{border-color:#E36A77;background:#FFF8F9}
+.lg-f.bad input:focus{box-shadow:0 0 0 4px rgba(200,20,42,.12)}
+.lg-opts{display:flex;align-items:center;justify-content:space-between;gap:10px;font-size:13px;margin-top:-4px}
+.chk{display:inline-flex;align-items:center;gap:9px;color:#3D4660;font-weight:600;cursor:pointer;user-select:none}
+.chk input{position:absolute;opacity:0;width:1px;height:1px}
+.chk span{width:19px;height:19px;border-radius:6px;border:1.5px solid #C9CFDB;background:#fff;display:grid;place-items:center;transition:all .15s}
+.chk input:checked + span{background:#16203A;border-color:#16203A}
+.chk input:checked + span::after{content:"";width:5px;height:9px;border:solid #fff;border-width:0 2px 2px 0;transform:translateY(-1px) rotate(45deg)}
+.chk input:focus-visible + span{outline:2px solid #1A6FB5;outline-offset:2px}
+.lnk{color:#1A6FB5;font-weight:700;font-size:13px;padding:2px}
+.lnk:hover{text-decoration:underline}
+.lg-btn{position:relative;overflow:hidden;height:54px;border-radius:15px;background:linear-gradient(135deg,#22305A,#16203A);color:#fff;font-weight:700;font-size:15.5px;display:flex;align-items:center;justify-content:center;gap:10px;box-shadow:0 14px 28px -14px rgba(22,32,58,.7);transition:transform .15s,box-shadow .15s,filter .15s}
+.lg-btn::after{content:"";position:absolute;left:0;right:0;bottom:0;height:4px;background:var(--rainbow)}
+.lg-btn:hover{transform:translateY(-1px);box-shadow:0 18px 32px -14px rgba(22,32,58,.75);filter:brightness(1.1)}
+.lg-btn:active{transform:none}
+.lg-btn .arr{display:grid;transition:transform .2s}
+.lg-btn .arr svg{width:19px;height:19px}
+.lg-btn:hover .arr{transform:translateX(4px)}
+.lg-btn .spin{display:none;width:18px;height:18px;border-radius:50%;border:2.5px solid rgba(255,255,255,.3);border-top-color:#fff;animation:spin .7s linear infinite}
+.lg-btn.busy{pointer-events:none}
+.lg-btn.busy .spin{display:block}.lg-btn.busy .arr{display:none}
+@keyframes spin{to{transform:rotate(360deg)}}
+.lg-hint{margin:0;display:flex;gap:8px;align-items:flex-start;font-size:12.5px;line-height:1.45;color:#7A6020;background:#FFF9E6;border-radius:12px;padding:10px 12px}
+.lg-hint svg{width:16px;height:16px;flex:none;margin-top:1px;color:#C99000}
+.lg-safe{margin:0;display:flex;align-items:center;gap:8px;font-size:12.5px;color:#667089;font-weight:600}
+.lg-safe svg{width:16px;height:16px;color:#3F7A10}
+.lg-foot{margin-top:auto;padding-top:12px;font-size:11.5px;color:#9AA2B5;text-align:center}
+.lg-form > .lg-card{margin-top:auto}
+
+@media (max-width:1180px){.kpis{grid-template-columns:1fr 1fr}.g2,.g2b{grid-template-columns:1fr}.filters{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media (max-width:1060px),(max-height:780px){.scene{display:none}.lg-mid{max-width:520px}}
+@media (max-width:860px){.shell{grid-template-columns:1fr}.side{display:none}.login{grid-template-columns:1fr}.lg-art{display:none}.lg-form{padding:64px 16px 20px}.lg-card{padding:28px 22px 22px}.content,.top{padding-left:16px;padding-right:16px}.kpis{grid-template-columns:1fr}.filters{grid-template-columns:1fr 1fr}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+
+<!-- ===== Inicio de sesión ===== -->
+<section class="login" id="login">
+  <div class="lg-art">
+    <span class="rb"></span><span class="fx dots"></span><span class="fx o1"></span><span class="fx o2"></span><span class="fx o3"></span>
+    <header class="lg-head">
+      <div class="name" aria-label="SICOE"><span>S</span><span>I</span><span>C</span><span>O</span><span>E</span></div>
+      <span class="lg-tag">Sistema de Cobro<br>de Estacionamiento</span>
+    </header>
+    <div class="lg-mid">
+      <span class="lg-live"><i></i>Monitoreo de las zonas en vivo</span>
+      <h2>Control del estacionamiento municipal, <em>en tiempo real.</em></h2>
+      <p>Recaudación, ocupación de zonas, deudas y cobradores de la Subgerencia de Transporte en un solo lugar.</p>
+      <div class="scene" aria-hidden="true">
+        <div class="gl mk-a">
+          <div class="mk-row"><span class="mk-ic" data-i="trend"></span><span>Recaudado hoy</span><span class="mk-up">▲ 12%</span></div>
+          <b class="mk-big">S/ 237.60</b>
+          <div class="mk-bars"><i style="height:18%"></i><i style="height:30%"></i><i style="height:52%"></i><i style="height:64%"></i><i style="height:86%"></i><i style="height:58%"></i><i style="height:60%"></i><i style="height:72%"></i><i style="height:68%"></i><i class="now" style="height:96%"></i></div>
+        </div>
+        <div class="gl mk-b">
+          <div class="mk-row"><span class="mk-ic blue" data-i="car"></span><span>Jr. Las Maquinarias</span></div>
+          <div class="mk-sp"><i class="o"></i><i class="o"></i><i></i><i class="o"></i><i class="y"></i><i></i><i class="o"></i><i class="o"></i><i></i><i class="o"></i><i></i><i class="o"></i><i class="y"></i><i class="o"></i><i></i><i class="o"></i><i class="o"></i><i></i></div>
+          <small>11 de 18 espacios ocupados</small>
+        </div>
+        <div class="gl mk-c"><span class="mk-ic green" data-i="check"></span><div><b>ZKY-198 pagó S/ 1.60</b><small>Yape · hace un momento</small></div></div>
+      </div>
+    </div>
+    <div class="lg-stats">
+      <div><span data-i="pin"></span><b id="lgZonas">12</b><small>zonas</small></div>
+      <div><span data-i="car"></span><b id="lgEsp">210</b><small>espacios</small></div>
+      <div><span data-i="coins"></span><b>S/ 0.80</b><small>por media hora</small></div>
+    </div>
+  </div>
+  <div class="lg-form">
+    <span class="lg-boceto" title="No hay conexión real: se muestran datos de ejemplo"><i></i>Modo boceto</span>
+    <form class="lg-card" id="lgForm" novalidate>
+      <img src="{{LOGO}}" alt="Municipalidad de San Juan de Lurigancho">
+      <div class="lg-title">
+        <span class="eyebrow">Panel administrativo</span>
+        <h3>Inicia sesión</h3>
+        <p>Usa tu DNI y la contraseña que te asignó la Subgerencia.</p>
+      </div>
+      <div class="lg-f">
+        <label for="lgDni">DNI</label>
+        <div class="inp"><span data-i="idcard"></span><input id="lgDni" inputmode="numeric" autocomplete="username" maxlength="8" placeholder="Ingresa tus 8 dígitos" value="40125836"></div>
+        <span class="err" id="errDni">El DNI debe tener 8 dígitos.</span>
+      </div>
+      <div class="lg-f">
+        <label for="lgPass">Contraseña</label>
+        <div class="inp"><span data-i="lock"></span><input id="lgPass" type="password" autocomplete="current-password" placeholder="Tu contraseña" value="boceto"><button type="button" class="eye" id="lgEye" aria-label="Mostrar contraseña" title="Mostrar contraseña" data-i="eye"></button></div>
+        <span class="err" id="errPass">Ingresa tu contraseña.</span>
+      </div>
+      <div class="lg-opts">
+        <label class="chk"><input type="checkbox" checked><span></span>Recordar mi DNI</label>
+        <button type="button" class="lnk" id="lgOlv">¿Olvidaste tu contraseña?</button>
+      </div>
+      <button class="lg-btn" type="submit" id="lgBtn"><span class="spin"></span><span class="tx">Ingresar al panel</span><span class="arr" data-i="arrow"></span></button>
+      <p class="lg-hint"><span data-i="info"></span>Es un boceto: pulsa «Ingresar al panel» para ver el diseño con datos de ejemplo.</p>
+    </form>
+    <p class="lg-safe"><span data-i="shield"></span>Acceso exclusivo para personal autorizado de la municipalidad</p>
+    <footer class="lg-foot">© 2026 Municipalidad de San Juan de Lurigancho · Subgerencia de Transporte</footer>
+  </div>
+</section>
+
+<div class="shell">
+  <aside class="side">
+    <div class="brand"><span class="mk"><b>P</b></span><div><h1>SICOE</h1><small>Panel administrativo</small></div></div>
+    <p class="nav-l">Operación</p>
+    <nav class="nav" id="nav">
+      <a href="#resumen" data-v="resumen"><span data-i="grid"></span>Resumen</a>
+      <a href="#vivo" data-v="vivo"><span data-i="radio"></span>Ocupación en vivo<span class="live"></span></a>
+      <a href="#movimientos" data-v="movimientos"><span data-i="list"></span>Movimientos</a>
+      <a href="#deudas" data-v="deudas"><span data-i="alert"></span>Deudas<span class="cnt" id="navDeu"></span></a>
+    </nav>
+    <p class="nav-l">Administración</p>
+    <nav class="nav">
+      <a href="#cobradores" data-v="cobradores"><span data-i="users"></span>Cobradores</a>
+      <a href="#zonas" data-v="zonas"><span data-i="pin"></span>Zonas y tarifa</a>
+      <a href="#reportes" data-v="reportes"><span data-i="file"></span>Reportes</a>
+    </nav>
+    <div class="side-foot">
+      <div class="muni"><img src="{{LOGO}}" alt="Municipalidad de San Juan de Lurigancho"></div>
+      <div class="me"><span class="av">RM</span><div><b>Rosa Mendoza</b><small>Sub. de Transporte</small></div><button id="logout" title="Cerrar sesión" aria-label="Cerrar sesión" data-i="logout"></button></div>
+    </div>
+  </aside>
+
+  <div class="main">
+    <header class="top" id="top">
+      <div class="grow"><h2 id="pgT"></h2><p id="pgS"></p></div>
+      <span class="sync"><i></i>Datos de ejemplo · actualizado hace 1 min</span>
+      <button class="ibtn" id="theme" title="Cambiar tema" aria-label="Cambiar tema" data-i="moon"></button>
+      <button class="ibtn" title="Notificaciones" aria-label="Notificaciones" data-i="bell"><span class="dot"></span></button>
+    </header>
+    <main class="content" id="content"></main>
+  </div>
+</div>
+
+<div class="scrim" id="scrim"><div class="modal" role="dialog" aria-modal="true" id="modal"></div></div>
+<div class="toast" id="toast"></div>
+<div class="tip" id="tip"></div>
+
+<script>
+/* ---------- Iconos ---------- */
+const P = {
+  grid:'<rect width="7" height="7" x="3" y="3" rx="1.5"/><rect width="7" height="7" x="14" y="3" rx="1.5"/><rect width="7" height="7" x="14" y="14" rx="1.5"/><rect width="7" height="7" x="3" y="14" rx="1.5"/>',
+  radio:'<circle cx="12" cy="12" r="2"/><path d="M16.24 7.76a6 6 0 0 1 0 8.49M7.76 16.24a6 6 0 0 1 0-8.49M19.07 4.93a10 10 0 0 1 0 14.14M4.93 19.07a10 10 0 0 1 0-14.14"/>',
+  list:'<path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/>',
+  alert:'<path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"/><path d="M12 9v4M12 17h.01"/>',
+  users:'<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/>',
+  pin:'<path d="M20 10c0 4.99-5.54 10.19-7.4 11.8a1 1 0 0 1-1.2 0C9.54 20.19 4 14.99 4 10a8 8 0 0 1 16 0"/><circle cx="12" cy="10" r="3"/>',
+  file:'<path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4M8 13h8M8 17h5"/>',
+  logout:'<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/>',
+  moon:'<path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/>',
+  sun:'<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/>',
+  bell:'<path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9M10.3 21a1.94 1.94 0 0 0 3.4 0"/>',
+  coins:'<circle cx="8" cy="8" r="6"/><path d="M18.09 10.37A6 6 0 1 1 10.34 18M7 6h1v4M16.71 13.88l.7.71-2.82 2.82"/>',
+  car:'<path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.4 2.9A3.7 3.7 0 0 0 2 12v4c0 .6.4 1 1 1h2"/><circle cx="7" cy="17" r="2"/><path d="M9 17h6"/><circle cx="17" cy="17" r="2"/>',
+  check:'<path d="M20 6 9 17l-5-5"/>', x:'<path d="M18 6 6 18M6 6l12 12"/>',
+  download:'<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m7 10 5 5 5-5M12 15V3"/>',
+  plus:'<path d="M5 12h14M12 5v14"/>', search:'<circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/>',
+  trend:'<path d="M22 7 13.5 15.5 8.5 10.5 2 17"/><path d="M16 7h6v6"/>', clock:'<circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/>',
+  edit:'<path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/>', info:'<circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/>',
+  qr:'<rect width="5" height="5" x="3" y="3" rx="1"/><rect width="5" height="5" x="16" y="3" rx="1"/><rect width="5" height="5" x="3" y="16" rx="1"/><path d="M21 16h-3a2 2 0 0 0-2 2v3M21 21v.01M12 7v3a2 2 0 0 1-2 2H7M3 12h.01M12 3h.01M12 16v.01M16 12h1M21 12v.01M12 21v-1"/>',
+  cash:'<rect width="20" height="12" x="2" y="6" rx="2"/><circle cx="12" cy="12" r="2"/><path d="M6 12h.01M18 12h.01"/>',
+  idcard:'<rect width="20" height="14" x="2" y="5" rx="2"/><circle cx="8" cy="11" r="2"/><path d="M5 16a3 3 0 0 1 6 0M14 10h4M14 14h3"/>',
+  lock:'<rect width="16" height="11" x="4" y="11" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/>',
+  eye:'<path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/>',
+  eyeoff:'<path d="M9.9 4.24A9 9 0 0 1 12 4c6.5 0 10 8 10 8a17 17 0 0 1-2.2 3.2M6.6 6.6C3.9 8.3 2 12 2 12s3.5 7 10 7a9.7 9.7 0 0 0 5.4-1.6M14.1 14.1a3 3 0 1 1-4.2-4.2M2 2l20 20"/>',
+  arrow:'<path d="M5 12h14M13 6l6 6-6 6"/>',
+  shield:'<path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1Z"/><path d="m9 12 2 2 4-4"/>',
+  cal:'<rect width="18" height="18" x="3" y="4" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/>', send:'<path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/>'
+};
+const ic = (n, s) => `<svg class="i" viewBox="0 0 24 24"${s ? ` style="width:${s}px;height:${s}px"` : ''} aria-hidden="true">${P[n]}</svg>`;
+const paint = (root = document) => root.querySelectorAll('[data-i]').forEach(e => { if (!e.dataset.done){ e.insertAdjacentHTML('afterbegin', ic(e.dataset.i)); e.dataset.done = 1; } });
+const $ = s => document.querySelector(s);
+const money = n => 'S/ ' + n.toFixed(2);
+const pad = n => String(n).padStart(2, '0');
+const hhmm = d => pad(d.getHours()) + ':' + pad(d.getMinutes());
+
+/* ---------- Datos de ejemplo (generados siempre igual) ---------- */
+let seed = 20261014;
+const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
+const pick = a => a[Math.floor(rnd() * a.length)];
+const ZONAS = [['AV. FERNANDO WIESSE 32 IMPAR',10],['AV. FERNANDO WIESSE 32 PAR',10],['AV. FERNANDO WIESSE 33 IMPAR',22],['AV. FERNANDO WIESSE 33 PAR',22],['CL. VARA DE ORO 2 IMPAR',16],['CL. VARA DE ORO 2 PAR',16],['JR. ALAMEDA LANZON 2 IMPAR',16],['JR. ALAMEDA LANZON 2 PAR',16],['JR. LAS MAQUINARIAS TRAMO 01',28],['JR. LAS MAQUINARIAS TRAMO 02',28],['JR. WIRACOCHA 2 IMPAR',7],['JR. WIRACOCHA 2 PAR',19]].map(([n,cap],i) => ({ n, cap, id:i }));
+const COBR = [
+  { nombre:'Luis Quispe Ramos', dni:'45673891', zonas:[0,1], activo:true, col:'#E3EFFA', tx:'#0F4C80' },
+  { nombre:'María Huamán Torres', dni:'47120938', zonas:[2,3], activo:true, col:'#FFF4D2', tx:'#6B4C00' },
+  { nombre:'Jorge Paredes Vílchez', dni:'43398172', zonas:[4,5], activo:true, col:'#ECF6DD', tx:'#3F7A10' },
+  { nombre:'Rosa Salazar Ccori', dni:'46281057', zonas:[6,7], activo:true, col:'#FDE7F1', tx:'#9E0D55' },
+  { nombre:'Carlos Mamani Flores', dni:'44850263', zonas:[8,9], activo:true, col:'#E1F3F5', tx:'#0A5862' },
+  { nombre:'Ana Gutiérrez Poma', dni:'48019374', zonas:[10,11], activo:true, col:'#FCE9EB', tx:'#A0101F' },
+  { nombre:'Pedro Chávez León', dni:'41762590', zonas:[], activo:false, col:'#E8ECF2', tx:'#576079' }
+];
+const ini = n => n.split(' ').slice(0, 2).map(w => w[0]).join('');
+const LET = 'ABCDEFGHJKLMPRSTUVWXYZ';
+const placa = () => pick(LET) + pick(LET.split('').concat('1','2','3','4','5','6','7','8','9')) + pick(LET) + '-' + (100 + Math.floor(rnd() * 899));
+const MOD = [['Toyota Yaris','Rojo'],['Kia Rio','Blanco'],['Hyundai Accent','Gris'],['Nissan Sentra','Azul'],['Suzuki Swift','Negro'],['Chevrolet Sail','Plata'],['Toyota Corolla','Blanco'],['Kia Picanto','Rojo'],['Mitsubishi L200','Gris'],['Hyundai Tucson','Negro']];
+
+const HOY = new Date(); HOY.setSeconds(0, 0);
+const AHORA = new Date(HOY); AHORA.setHours(17, 20); // hora fija para que el boceto muestre un día con movimiento
+const T = [];
+for (let d = 0; d < 7; d++){
+  const dia = new Date(AHORA); dia.setDate(dia.getDate() - d);
+  const n = d === 0 ? 0 : 110 + Math.floor(rnd() * 50);
+  const gen = (inicio, est) => {
+    const z = Math.floor(rnd() * 12), c = COBR[Math.floor(z / 2)], [modelo, color] = pick(MOD);
+    const mins = 8 + Math.floor(rnd() * 160), fr = Math.max(1, Math.ceil(mins / 30));
+    let fin = est === 'activo' ? null : new Date(inicio.getTime() + mins * 60000);
+    if (fin && fin > AHORA) fin = new Date(Math.max(inicio.getTime() + 5 * 60000, AHORA.getTime() - Math.floor(rnd() * 9 + 1) * 60000));
+    const r = rnd(), estado = est || (r < .06 ? 'pendiente' : 'pagado');
+    T.push({ placa:placa(), zona:z, espacio:1 + Math.floor(rnd() * ZONAS[z].cap), inicio, fin, monto:fr * .8, estado, metodo: estado === 'pagado' ? (rnd() < .72 ? 'QR' : 'Efectivo') : null, op: estado === 'pagado' && rnd() < .6 ? String(10000000 + Math.floor(rnd() * 89999999)) : '', cobrador:c, modelo, color });
+  };
+  if (d > 0) for (let i = 0; i < n; i++){ const h = new Date(dia); h.setHours(7 + Math.floor(rnd() * 13), Math.floor(rnd() * 60)); gen(h); }
+  else {
+    for (let h = 7; h <= AHORA.getHours(); h++){
+      const peso = [3,6,9,11,10,12,14,13,11,10,12,13,9,6][h - 7] || 5;
+      for (let i = 0; i < peso; i++){ const t = new Date(AHORA); t.setHours(h, Math.floor(rnd() * 60)); if (t <= AHORA - 15 * 60000) gen(t); }
+    }
+  }
+}
+/* Vehículos en parqueo ahora, sin repetir espacio */
+const usados = new Set();
+for (let i = 0; i < 74; i++){
+  const z = Math.floor(rnd() * 12), e = 1 + Math.floor(rnd() * ZONAS[z].cap), k = z + '-' + e;
+  if (usados.has(k)) continue; usados.add(k);
+  const t = new Date(AHORA.getTime() - (5 + Math.floor(rnd() * 170)) * 60000), [modelo, color] = pick(MOD);
+  T.push({ placa:placa(), zona:z, espacio:e, inicio:t, fin:null, monto:Math.max(1, Math.ceil((AHORA - t) / 1800000)) * .8, estado:'activo', metodo:null, op:'', cobrador:COBR[Math.floor(z / 2)], modelo, color });
+}
+T.sort((a, b) => b.inicio - a.inicio);
+const esHoy = d => d && d.toDateString() === AHORA.toDateString();
+const sum = l => l.reduce((s, t) => s + t.monto, 0);
+
+/* ---------- Navegación ---------- */
+const VIEWS = {
+  resumen:['Resumen del día', () => 'Hoy, ' + AHORA.toLocaleDateString('es-PE', { weekday:'long', day:'numeric', month:'long' })],
+  vivo:['Ocupación en vivo', () => 'Espacios ocupados en las 12 zonas, ahora mismo'],
+  movimientos:['Movimientos', () => 'Ingresos, pagos y deudas registrados por los cobradores'],
+  deudas:['Deudas', () => 'Vehículos que se retiraron sin pagar'],
+  cobradores:['Cobradores', () => 'Personal de campo con acceso a la app SICOE'],
+  zonas:['Zonas y tarifa', () => 'Configuración que reciben todas las apps de campo'],
+  reportes:['Reportes', () => 'Descarga la información para control y rendición']
+};
+let view = 'resumen';
+function go(v){
+  if (!VIEWS[v]) v = 'resumen';
+  view = v;
+  document.querySelectorAll('.nav a').forEach(a => a.classList.toggle('on', a.dataset.v === v));
+  $('#pgT').textContent = VIEWS[v][0]; $('#pgS').textContent = VIEWS[v][1]();
+  $('#content').innerHTML = '<div class="boceto">' + ic('info') + 'Boceto de diseño: los datos son de ejemplo y todavía no está conectado a la app de campo.</div>' + R[v]();
+  paint($('#content')); (AFTER[v] || (() => {}))();
+  scrollTo({ top:0 });
+}
+addEventListener('hashchange', () => go(location.hash.slice(1)));
+addEventListener('scroll', () => $('#top').classList.toggle('sc', scrollY > 4));
+
+/* ---------- Vistas ---------- */
+const R = {}, AFTER = {};
+/* Minigráfico de línea para los indicadores */
+const spark = (vals, col) => {
+  const W = 92, H = 34, m = Math.max(...vals, 1), n = Math.max(vals.length - 1, 1);
+  const d = 'M' + vals.map((v, i) => (i * W / n).toFixed(1) + ',' + (H - 3 - (H - 6) * v / m).toFixed(1)).join(' L');
+  return `<svg class="spark" viewBox="0 0 ${W} ${H}" style="color:${col}" aria-hidden="true"><path d="${d} L${W},${H} L0,${H} Z" fill="currentColor" opacity=".13"/><path d="${d}" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+};
+/* Dona: partes = [[valor, color]], con el total al centro */
+const donut = (partes, centro, sub, label) => {
+  const r = 64, C = 2 * Math.PI * r, tot = partes.reduce((s, p) => s + p[0], 0) || 1; let off = 0;
+  const seg = partes.map(([v, c]) => { const l = v / tot * C, g = l > 4 ? 2 : 0, s = `<circle cx="80" cy="80" r="${r}" style="stroke:${c}" stroke-dasharray="${Math.max(l - g, 0)} ${C}" stroke-dashoffset="${-off}" transform="rotate(-90 80 80)"/>`; off += l; return s; }).join('');
+  return `<svg class="donut" viewBox="0 0 160 160" role="img" aria-label="${label}"><circle class="bg" cx="80" cy="80" r="${r}"/>${seg}<text x="80" y="82" text-anchor="middle">${centro}</text><text class="s" x="80" y="99" text-anchor="middle">${sub}</text></svg>`;
+};
+const pillEstado = t => t.estado === 'pagado' ? `<span class="pill ok"><span class="d"></span>Pagado · ${t.metodo}</span>`
+  : t.estado === 'activo' ? '<span class="pill on"><span class="d"></span>En parqueo</span>' : '<span class="pill bad"><span class="d"></span>No pagó</span>';
+const who = c => `<span class="who"><span class="av" style="background:${c.col};color:${c.tx}">${ini(c.nombre)}</span>${c.nombre}</span>`;
+
+R.resumen = () => {
+  const hoy = T.filter(t => esHoy(t.inicio)), pag = hoy.filter(t => t.estado === 'pagado');
+  const ayer = new Date(AHORA); ayer.setDate(ayer.getDate() - 1);
+  const pagAyer = T.filter(t => t.estado === 'pagado' && t.inicio.toDateString() === ayer.toDateString() && t.inicio.getHours() <= AHORA.getHours());
+  const tot = sum(pag), dif = pagAyer.length ? (tot / sum(pagAyer) - 1) * 100 : 0;
+  const act = T.filter(t => t.estado === 'activo'), cap = ZONAS.reduce((s, z) => s + z.cap, 0);
+  const deu = T.filter(t => t.estado === 'pendiente');
+  const qr = sum(pag.filter(t => t.metodo === 'QR')), ef = sum(pag.filter(t => t.metodo === 'Efectivo')), de = sum(hoy.filter(t => t.estado === 'pendiente'));
+  const mt = qr + ef + de || 1;
+  const hs = []; for (let h = 7; h <= AHORA.getHours(); h++) hs.push(h);
+  const spPag = hs.map(h => sum(pag.filter(t => t.fin && t.fin.getHours() === h)));
+  const spIng = hs.map(h => hoy.filter(t => t.inicio.getHours() === h).length);
+  let acc = 0; const spAte = spIng.map(v => acc += v);
+  const spDeu = Array.from({ length:7 }, (_, i) => { const d = new Date(AHORA); d.setDate(d.getDate() - 6 + i); return deu.filter(t => t.inicio.toDateString() === d.toDateString()).length; });
+  const ticket = pag.length ? tot / pag.length : 0, perm = pag.length ? pag.reduce((s, t) => s + (t.fin - t.inicio), 0) / pag.length / 60000 : 0;
+  const porC = COBR.filter(c => c.activo).map(c => { const l = pag.filter(t => t.cobrador === c); return { c, n:l.length, s:sum(l), d:hoy.filter(t => t.cobrador === c && t.estado === 'pendiente').length }; }).sort((a, b) => b.s - a.s);
+  return `
+  <div class="kpis">
+    <div class="card kpi hero"><span class="lb"><span class="ic">${ic('trend')}</span>Recaudado hoy</span><div class="kv"><b>${money(tot)}</b>${spark(spPag, '#F7B500')}</div><span class="dt"><span class="${dif >= 0 ? 'up' : 'dn'}">${dif >= 0 ? '▲' : '▼'} ${Math.abs(dif).toFixed(0)}%</span> frente a ayer a esta hora</span></div>
+    <div class="card kpi"><span class="lb"><span class="ic blue">${ic('car')}</span>En parqueo ahora</span><div class="kv"><b>${act.length}</b>${spark(spIng, 'var(--primary)')}</div><span class="dt">${Math.round(act.length / cap * 100)}% de ${cap} espacios ocupados</span></div>
+    <div class="card kpi"><span class="lb"><span class="ic yel">${ic('check')}</span>Vehículos atendidos</span><div class="kv"><b>${hoy.length}</b>${spark(spAte, '#E0A000')}</div><span class="dt">${pag.length} pagaron · ${act.length} siguen en parqueo</span></div>
+    <div class="card kpi"><span class="lb"><span class="ic red">${ic('alert')}</span>Deudas por cobrar</span><div class="kv"><b>${money(sum(deu))}</b>${spark(spDeu, 'var(--bad)')}</div><span class="dt">${deu.length} vehículos en los últimos 7 días</span></div>
+  </div>
+  <div class="g2">
+    <div class="card"><div class="card-h"><div class="grow"><h3>Recaudación por hora</h3><p>Pagos registrados hoy, en soles · en amarillo, la hora en curso</p></div><div class="chips" id="rangoH"><button class="chip on">Hoy</button><button class="chip">Ayer</button><button class="chip">7 días</button></div></div>
+      <div class="card-b"><div class="chart" id="chH"></div></div></div>
+    <div class="card"><div class="card-h"><div class="grow"><h3>Cómo se cobró hoy</h3><p>Según el medio de pago</p></div></div>
+      <div class="card-b"><div class="pay">${donut([[qr, 'var(--c-qr)'], [ef, 'var(--c-ef)'], [de, 'var(--c-de)']], money(qr + ef), 'cobrado hoy', `QR ${Math.round(qr / mt * 100)}%, efectivo ${Math.round(ef / mt * 100)}%, sin pagar ${Math.round(de / mt * 100)}%`)}
+        <div class="legend">
+          <div><span class="sw" style="background:var(--c-qr)"></span>QR (Yape / Plin)<span class="v">${money(qr)}</span><span class="p">${Math.round(qr / mt * 100)}%</span></div>
+          <div><span class="sw" style="background:var(--c-ef)"></span>Efectivo<span class="v">${money(ef)}</span><span class="p">${Math.round(ef / mt * 100)}%</span></div>
+          <div><span class="sw" style="background:var(--c-de)"></span>Sin pagar<span class="v">${money(de)}</span><span class="p">${Math.round(de / mt * 100)}%</span></div>
+        </div></div>
+        <div class="minis"><div><small>Ticket promedio</small><b>${money(ticket)}</b></div><div><small>Permanencia promedio</small><b>${Math.round(perm)} min</b></div></div></div></div></div>
+  </div>
+  <div class="g2">
+    <div class="card"><div class="card-h"><div class="grow"><h3>Ocupación por zona</h3><p>Espacios ocupados ahora · en amarillo, zonas sobre 80%</p></div><a class="btn btn-txt" href="#vivo">Ver en vivo</a></div>
+      <div class="card-b"><div class="occ">${ZONAS.map(z => { const o = act.filter(t => t.zona === z.id).length, p = o / z.cap; return `<div class="occ-r"><span title="${z.n}">${z.n}</span><span class="tr"><i class="${p >= .8 ? 'hi' : ''}" style="width:${p * 100}%"></i></span><b>${o}/${z.cap}</b></div>`; }).join('')}</div></div></div>
+    <div class="card"><div class="card-h"><div class="grow"><h3>Últimos movimientos</h3><p>Lo más reciente de los cobradores</p></div><a class="btn btn-txt" href="#movimientos">Ver todo</a></div>
+      <div class="card-b"><div class="feed">${T.slice(0, 7).map(t => {
+        const [cl, i, tx] = t.estado === 'activo' ? ['blue','car','Ingresó'] : t.estado === 'pagado' ? ['green','check','Pagó'] : ['red','alert','Se fue sin pagar'];
+        return `<div class="fi"><span class="ic ${cl}">${ic(i)}</span><div class="mid"><b>${t.placa}</b> · ${tx}<small>${hhmm(t.fin || t.inicio)} · E${t.espacio} · ${ZONAS[t.zona].n}</small></div><span class="amt">${t.estado === 'activo' ? '' : money(t.monto)}</span></div>`; }).join('')}</div></div></div>
+  </div>
+  <div class="card"><div class="card-h"><div class="grow"><h3>Desempeño de cobradores hoy</h3><p>Ordenado por monto recaudado</p></div><a class="btn btn-txt" href="#cobradores">Gestionar</a></div>
+    <div class="card-b" style="padding-top:8px"><div class="tbl-w"><table><thead><tr><th style="width:44px">#</th><th>Cobrador</th><th>Zonas</th><th class="r">Pagos</th><th class="r">Deudas</th><th class="r">Recaudado</th></tr></thead><tbody>
+      ${porC.map((r, i) => `<tr><td><span class="rk${i < 3 ? ' g' + (i + 1) : ''}">${i + 1}</span></td><td>${who(r.c)}</td><td class="muted">${r.c.zonas.map(z => ZONAS[z].n.replace(/ (IMPAR|PAR)$/, '')).filter((v, i, a) => a.indexOf(v) === i).join(', ')}</td><td class="r tnum">${r.n}</td><td class="r tnum">${r.d ? `<span class="pill bad">${r.d}</span>` : '<span class="muted">0</span>'}</td><td class="r tnum"><span class="share"><span class="tr"><i style="width:${porC[0].s ? r.s / porC[0].s * 100 : 0}%"></i></span><b>${money(r.s)}</b></span></td></tr>`).join('')}
+    </tbody></table></div></div></div>`;
+};
+AFTER.resumen = () => {
+  const pag = T.filter(t => esHoy(t.inicio) && t.estado === 'pagado');
+  const horas = []; for (let h = 7; h <= Math.max(AHORA.getHours(), 8); h++) horas.push({ h, v:sum(pag.filter(t => t.fin && t.fin.getHours() === h)), n:pag.filter(t => t.fin && t.fin.getHours() === h).length });
+  barras($('#chH'), horas, d => `${pad(d.h)}:00`, d => `<b>${money(d.v)}</b>${pad(d.h)}:00 – ${pad(d.h)}:59 · ${d.n} pagos`);
+  document.querySelectorAll('#rangoH .chip').forEach(b => b.onclick = () => toast('En el boceto solo se muestra «Hoy»'));
+};
+
+/* Gráfico de barras simple (una serie: sin leyenda, el título la nombra) */
+function barras(el, data, lab, tipFn){
+  const W = 720, H = 240, pl = 44, pb = 26, pt = 10, max = Math.max(...data.map(d => d.v), 1);
+  const step = Math.pow(10, Math.floor(Math.log10(max))) * (max / Math.pow(10, Math.floor(Math.log10(max))) > 5 ? 2 : 1);
+  const top = Math.ceil(max / step) * step, y = v => pt + (H - pt - pb) * (1 - v / top);
+  const bw = (W - pl) / data.length, w = Math.min(34, bw - 10);
+  let s = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Recaudación por hora"><defs><linearGradient id="gBar" x1="0" y1="0" x2="0" y2="1"><stop offset="0" style="stop-color:var(--primary)"/><stop offset="1" style="stop-color:var(--primary-2);stop-opacity:.75"/></linearGradient><linearGradient id="gNow" x1="0" y1="0" x2="0" y2="1"><stop offset="0" style="stop-color:#FFCB3D"/><stop offset="1" style="stop-color:#F39200"/></linearGradient></defs><g class="grid">`;
+  for (let v = 0; v <= top + .001; v += step) s += `<line x1="${pl}" x2="${W}" y1="${y(v)}" y2="${y(v)}"/><text class="ax" x="${pl - 8}" y="${y(v) + 4}" text-anchor="end">${v}</text>`;
+  s += '</g>';
+  data.forEach((d, i) => {
+    const x = pl + i * bw + (bw - w) / 2, h = Math.max(0, H - pb - y(d.v)), yy = y(d.v), r = Math.min(4, h);
+    s += h > 0 ? `<path class="bar${i === data.length - 1 ? ' now' : ''}" data-i="${i}" d="M${x},${H - pb} V${yy + r} Q${x},${yy} ${x + r},${yy} H${x + w - r} Q${x + w},${yy} ${x + w},${yy + r} V${H - pb} Z"/>` : '';
+    s += `<text class="ax" x="${x + w / 2}" y="${H - 8}" text-anchor="middle">${lab(d)}</text>`;
+    s += `<rect class="hit" data-i="${i}" x="${pl + i * bw}" y="${pt}" width="${bw}" height="${H - pt - pb}"/>`;
+  });
+  const con = data.filter(d => d.v), avg = con.length ? sum(con.map(d => ({ monto:d.v }))) / con.length : 0;
+  if (avg) s += `<line class="avg" x1="${pl}" x2="${W}" y1="${y(avg)}" y2="${y(avg)}"/><text class="avg-t" x="${pl + 8}" y="${y(avg) - 7}">Promedio ${money(avg)}</text>`;
+  el.innerHTML = s + '</svg>';
+  const tip = $('#tip');
+  el.querySelectorAll('.hit').forEach(r => {
+    r.addEventListener('mouseenter', () => {
+      const i = +r.dataset.i; el.querySelectorAll('.bar').forEach(b => b.classList.toggle('dim', +b.dataset.i !== i));
+      const bb = (el.querySelector(`.bar[data-i="${i}"]`) || r).getBoundingClientRect();
+      tip.innerHTML = tipFn(data[i]); tip.style.left = (bb.left + bb.width / 2) + 'px'; tip.style.top = (bb.top + scrollY - 6) + 'px'; tip.style.position = 'absolute'; tip.classList.add('on');
+    });
+    r.addEventListener('mouseleave', () => { tip.classList.remove('on'); el.querySelectorAll('.bar').forEach(b => b.classList.remove('dim')); });
+  });
+}
+
+R.vivo = () => {
+  const act = T.filter(t => t.estado === 'activo');
+  return `<div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap"><div class="leg-live"><span><i></i>Libre</span><span><i style="background:var(--primary);border-color:var(--primary)"></i>Ocupado</span><span><i style="background:var(--yel);border-color:var(--yel)"></i>Más de 2 horas</span></div><span class="muted" style="margin-left:auto;font-size:13px">${act.length} vehículos · pasa el mouse sobre un espacio para ver el detalle</span></div>
+  <div class="zones">${ZONAS.map(z => {
+    const oc = {}; act.filter(t => t.zona === z.id).forEach(t => oc[t.espacio] = t);
+    const n = Object.keys(oc).length, p = n / z.cap, c = COBR[Math.floor(z.id / 2)];
+    return `<div class="card zone"><div class="zone-h"><div><b>${z.n}</b><small>${c.nombre}</small></div><span class="pill ${p >= .8 ? 'yel' : n ? 'on' : 'off'}">${z.cap - n} libres</span></div>
+      <div class="spaces">${Array.from({ length:z.cap }, (_, i) => { const t = oc[i + 1]; if (!t) return `<span class="sp">${i + 1}</span>`; const mins = Math.round((AHORA - t.inicio) / 60000);
+        return `<span class="sp oc${mins > 120 ? ' lg' : ''}" data-t="${t.placa}|${hhmm(t.inicio)}|${mins}|${money(t.monto)}|${i + 1}">${i + 1}</span>`; }).join('')}</div>
+      <div class="zbar"><i style="width:${p * 100}%"></i></div></div>`; }).join('')}</div>`;
+};
+AFTER.vivo = () => {
+  const tip = $('#tip');
+  document.querySelectorAll('.sp.oc').forEach(s => {
+    s.addEventListener('mouseenter', () => { const [pl, h, m, mo, e] = s.dataset.t.split('|'), b = s.getBoundingClientRect();
+      tip.innerHTML = `<b>${pl}</b>Espacio ${e} · desde las ${h}<br>${Math.floor(m / 60) ? Math.floor(m / 60) + ' h ' : ''}${m % 60} min · ${mo}`; tip.style.position = 'absolute'; tip.style.left = (b.left + b.width / 2) + 'px'; tip.style.top = (b.top + scrollY - 6) + 'px'; tip.classList.add('on'); });
+    s.addEventListener('mouseleave', () => tip.classList.remove('on'));
+  });
+};
+
+let filtro = { estado:'', zona:'', cobr:'', q:'', pag:0 };
+R.movimientos = () => `
+  <div class="card"><div class="filters">
+    <div class="field"><label>Fecha</label><select><option>Últimos 7 días</option><option>Hoy</option><option>Ayer</option><option>Este mes</option></select></div>
+    <div class="field"><label for="fEst">Estado</label><select id="fEst"><option value="">Todos</option><option value="activo">En parqueo</option><option value="pagado">Pagado</option><option value="pendiente">No pagó</option></select></div>
+    <div class="field"><label for="fZona">Zona</label><select id="fZona"><option value="">Todas</option>${ZONAS.map(z => `<option value="${z.id}">${z.n}</option>`).join('')}</select></div>
+    <div class="field"><label for="fCob">Cobrador</label><select id="fCob"><option value="">Todos</option>${COBR.map((c, i) => `<option value="${i}">${c.nombre}</option>`).join('')}</select></div>
+    <div class="field"><label for="fQ">Placa</label><label class="search">${ic('search', 17)}<input id="fQ" placeholder="Buscar placa"></label></div>
+    <button class="btn btn-yel" onclick="toast('En el boceto la descarga no está activa')">${ic('download')}Exportar Excel</button>
+  </div>
+  <div class="tbl-w" style="border-top:1px solid var(--line)"><table><thead><tr><th>Placa</th><th>Vehículo</th><th>Zona · espacio</th><th>Entrada</th><th>Salida</th><th>Cobrador</th><th>Estado</th><th>N° operación</th><th class="r">Monto</th></tr></thead><tbody id="tb"></tbody></table></div>
+  <div class="pager"><span id="pgInfo"></span><span><button class="btn btn-out" id="pPrev" style="height:34px">Anterior</button> <button class="btn btn-out" id="pNext" style="height:34px">Siguiente</button></span></div></div>`;
+AFTER.movimientos = () => {
+  const draw = () => {
+    const f = filtro, l = T.filter(t => (!f.estado || t.estado === f.estado) && (f.zona === '' || t.zona === +f.zona) && (f.cobr === '' || t.cobrador === COBR[+f.cobr]) && (!f.q || t.placa.replace('-', '').includes(f.q.replace('-', ''))));
+    const per = 12, pages = Math.max(1, Math.ceil(l.length / per)); f.pag = Math.min(f.pag, pages - 1);
+    const fecha = d => (esHoy(d) ? 'Hoy' : d.toLocaleDateString('es-PE', { day:'2-digit', month:'short' })) + ' ' + hhmm(d);
+    $('#tb').innerHTML = l.slice(f.pag * per, f.pag * per + per).map(t => `<tr><td><span class="plate">${t.placa}</span></td><td class="muted">${t.modelo} · ${t.color}</td><td><span title="${ZONAS[t.zona].n}">E${t.espacio} · ${ZONAS[t.zona].n.length > 24 ? ZONAS[t.zona].n.slice(0, 23) + '…' : ZONAS[t.zona].n}</span></td><td class="tnum">${fecha(t.inicio)}</td><td class="tnum muted">${t.fin ? hhmm(t.fin) : '—'}</td><td>${who(t.cobrador)}</td><td>${pillEstado(t)}</td><td class="tnum muted">${t.op || '—'}</td><td class="r tnum"><b>${money(t.monto)}</b></td></tr>`).join('') || '<tr><td colspan="9" class="muted" style="text-align:center;padding:30px">No hay movimientos con esos filtros.</td></tr>';
+    $('#pgInfo').textContent = `${l.length} movimientos · página ${f.pag + 1} de ${pages}`;
+    $('#pPrev').disabled = !f.pag; $('#pNext').disabled = f.pag >= pages - 1;
+  };
+  $('#fEst').value = filtro.estado; $('#fZona').value = filtro.zona; $('#fCob').value = filtro.cobr; $('#fQ').value = filtro.q;
+  $('#fEst').onchange = e => { filtro.estado = e.target.value; filtro.pag = 0; draw(); };
+  $('#fZona').onchange = e => { filtro.zona = e.target.value; filtro.pag = 0; draw(); };
+  $('#fCob').onchange = e => { filtro.cobr = e.target.value; filtro.pag = 0; draw(); };
+  $('#fQ').oninput = e => { filtro.q = e.target.value.toUpperCase(); filtro.pag = 0; draw(); };
+  $('#pPrev').onclick = () => { filtro.pag--; draw(); }; $('#pNext').onclick = () => { filtro.pag++; draw(); };
+  draw();
+};
+
+R.deudas = () => {
+  const d = T.filter(t => t.estado === 'pendiente');
+  return `<div class="kpis" style="grid-template-columns:repeat(3,1fr)">
+    <div class="card kpi"><span class="lb"><span class="ic red">${ic('alert')}</span>Total por cobrar</span><b>${money(sum(d))}</b><span class="dt">últimos 7 días</span></div>
+    <div class="card kpi"><span class="lb"><span class="ic yel">${ic('car')}</span>Vehículos con deuda</span><b>${d.length}</b><span class="dt">la app avisa cuando vuelvan</span></div>
+    <div class="card kpi"><span class="lb"><span class="ic green">${ic('check')}</span>Deudas recuperadas</span><b>${money(7.2)}</b><span class="dt">cobradas al regresar esta semana</span></div></div>
+  <div class="card"><div class="card-h"><div class="grow"><h3>Vehículos que se fueron sin pagar</h3><p>Al volver a ingresar, el cobrador ve la alerta y cobra la deuda</p></div><button class="btn btn-out" onclick="toast('En el boceto la descarga no está activa')">${ic('download')}Exportar</button></div>
+    <div class="card-b"><div class="tbl-w"><table><thead><tr><th>Placa</th><th>Vehículo</th><th>Fecha</th><th>Zona · espacio</th><th>Tiempo</th><th>Registró</th><th class="r">Monto</th></tr></thead><tbody>
+    ${d.map(t => `<tr><td><span class="plate">${t.placa}</span></td><td class="muted">${t.modelo} · ${t.color}</td><td class="tnum">${t.inicio.toLocaleDateString('es-PE', { weekday:'short', day:'2-digit', month:'short' })} ${hhmm(t.inicio)}</td><td>E${t.espacio} · ${ZONAS[t.zona].n}</td><td class="tnum muted">${Math.round((t.fin - t.inicio) / 60000)} min</td><td>${who(t.cobrador)}</td><td class="r tnum"><b style="color:var(--bad)">${money(t.monto)}</b></td></tr>`).join('')}
+    </tbody></table></div></div></div>`;
+};
+
+R.cobradores = () => {
+  const pag = T.filter(t => esHoy(t.inicio) && t.estado === 'pagado');
+  return `<div class="card"><div class="card-h"><div class="grow"><h3>${COBR.length} cobradores registrados</h3><p>Ingresan a la app SICOE con su DNI y contraseña</p></div><button class="btn btn-pri" id="nuevoC">${ic('plus')}Nuevo cobrador</button></div>
+  <div class="card-b"><div class="tbl-w"><table><thead><tr><th>Nombre</th><th>DNI</th><th>Zonas asignadas</th><th>Último ingreso</th><th>Estado</th><th class="r">Recaudado hoy</th><th></th></tr></thead><tbody>
+  ${COBR.map((c, i) => `<tr><td>${who(c)}</td><td class="tnum">${c.dni}</td><td class="muted">${c.zonas.length ? c.zonas.map(z => ZONAS[z].n).join('<br>') : '—'}</td><td class="tnum muted">${c.activo ? 'Hoy 07:0' + (i + 2) : 'Hace 12 días'}</td><td>${c.activo ? '<span class="pill ok"><span class="d"></span>Activo</span>' : '<span class="pill off"><span class="d"></span>Desactivado</span>'}</td><td class="r tnum"><b>${money(sum(pag.filter(t => t.cobrador === c)))}</b></td><td class="r"><button class="btn btn-txt" data-ed="${i}">${ic('edit', 16)}Editar</button></td></tr>`).join('')}
+  </tbody></table></div></div></div>`;
+};
+AFTER.cobradores = () => {
+  const abrir = c => {
+    $('#modal').innerHTML = `<div class="modal-h"><h3>${c ? 'Editar cobrador' : 'Nuevo cobrador'}</h3><button class="ibtn" style="border:0" onclick="cerrar()" aria-label="Cerrar">${ic('x')}</button></div>
+      <div class="modal-b"><div class="field full"><label>Nombre completo</label><input value="${c ? c.nombre : ''}" placeholder="Nombres y apellidos"></div>
+      <div class="field"><label>DNI</label><input inputmode="numeric" maxlength="8" value="${c ? c.dni : ''}" placeholder="12345678"></div>
+      <div class="field"><label>Contraseña inicial</label><input type="password" placeholder="Se le pedirá cambiarla"></div>
+      <div class="field full"><label>Zonas asignadas</label><select multiple size="4" style="height:auto;padding:6px">${ZONAS.map(z => `<option${c && c.zonas.includes(z.id) ? ' selected' : ''}>${z.n}</option>`).join('')}</select></div>
+      <div class="field full"><label>Estado</label><select><option>Activo: puede usar la app</option><option${c && !c.activo ? ' selected' : ''}>Desactivado: no puede ingresar</option></select></div></div>
+      <div class="modal-f"><button class="btn btn-out" onclick="cerrar()">Cancelar</button><button class="btn btn-pri" onclick="cerrar();toast('Boceto: el cambio no se guarda')">Guardar</button></div>`;
+    $('#scrim').classList.add('on');
+  };
+  $('#nuevoC').onclick = () => abrir(null);
+  document.querySelectorAll('[data-ed]').forEach(b => b.onclick = () => abrir(COBR[+b.dataset.ed]));
+};
+function cerrar(){ $('#scrim').classList.remove('on'); }
+$('#scrim').onclick = e => { if (e.target.id === 'scrim') cerrar(); };
+
+R.zonas = () => `<div class="g2b">
+  <div class="card"><div class="card-h"><div class="grow"><h3>Tarifa</h3><p>Se aplica en todas las apps de campo al sincronizar</p></div></div>
+    <div class="card-b" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px">
+      <div class="field"><label>Monto por fracción (S/)</label><input value="0.80"></div>
+      <div class="field"><label>Fracción (minutos)</label><input value="30"></div>
+      <div class="field"><label>Tolerancia (minutos)</label><input value="0"></div>
+      <div style="grid-column:1/-1;display:flex;align-items:center;gap:12px;background:var(--surface-2);border-radius:12px;padding:12px 14px;font-size:13px;color:var(--text-2)">${ic('info', 18)}Ejemplo: 10 min = S/ 0.80 · 1 h = S/ 1.60 · 1 h 10 min = S/ 2.40<button class="btn btn-pri" style="margin-left:auto" onclick="toast('Boceto: el cambio no se guarda')">Guardar tarifa</button></div>
+    </div></div>
+  <div class="card"><div class="card-h"><div class="grow"><h3>QR de cobro</h3><p>Imagen que ve el conductor al pagar</p></div></div>
+    <div class="card-b" style="display:flex;gap:18px;align-items:center">
+      <div style="width:120px;height:120px;border-radius:14px;border:1.5px dashed var(--line);display:grid;place-items:center;color:var(--text-3);flex:none">${ic('qr', 40)}</div>
+      <div style="display:grid;gap:10px"><p style="margin:0;color:var(--text-2);font-size:13px">Sube el QR de Yape / Plin de la cuenta municipal. Se enviará a todas las apps de campo.</p><span><button class="btn btn-yel" onclick="toast('Boceto: subir imagen no está activo')">Subir QR</button></span></div>
+    </div></div></div>
+  <div class="card"><div class="card-h"><div class="grow"><h3>Zonas de estacionamiento</h3><p>${ZONAS.length} zonas · ${ZONAS.reduce((s, z) => s + z.cap, 0)} espacios en total</p></div><button class="btn btn-pri" onclick="toast('Boceto: crear zona no está activo')">${ic('plus')}Nueva zona</button></div>
+    <div class="card-b"><div class="tbl-w"><table><thead><tr><th>Zona</th><th class="r">Espacios</th><th>Cobrador asignado</th><th>Estado</th><th></th></tr></thead><tbody>
+    ${ZONAS.map(z => `<tr><td><b>${z.n}</b></td><td class="r tnum">${z.cap}</td><td>${who(COBR[Math.floor(z.id / 2)])}</td><td><span class="pill ok"><span class="d"></span>Habilitada</span></td><td class="r"><button class="btn btn-txt" onclick="toast('Boceto: editar zona no está activo')">${ic('edit', 16)}Editar</button></td></tr>`).join('')}
+    </tbody></table></div></div></div>`;
+
+R.reportes = () => {
+  const item = (i, cl, t, d) => `<div class="card" style="padding:20px;display:grid;gap:12px;align-content:start"><span class="ic ${cl}" style="width:44px;height:44px;border-radius:14px;display:grid;place-items:center">${ic(i)}</span><div><h3 style="margin:0;font-size:15.5px">${t}</h3><p style="margin:4px 0 0;color:var(--text-2);font-size:13px">${d}</p></div><div style="display:flex;gap:8px"><button class="btn btn-out" onclick="toast('Boceto: la descarga no está activa')">${ic('download')}Excel</button><button class="btn btn-out" onclick="toast('Boceto: la descarga no está activa')">${ic('file')}PDF</button></div></div>`;
+  return `<div class="card" style="padding:18px 20px;display:flex;gap:14px;align-items:end;flex-wrap:wrap">
+    <div class="field"><label>Desde</label><input type="date" value="${new Date(AHORA.getFullYear(), AHORA.getMonth(), 1).toISOString().slice(0, 10)}"></div>
+    <div class="field"><label>Hasta</label><input type="date" value="${AHORA.toISOString().slice(0, 10)}"></div>
+    <div class="field" style="min-width:260px"><label>Zona</label><select><option>Todas las zonas</option>${ZONAS.map(z => `<option>${z.n}</option>`).join('')}</select></div>
+    <div class="field" style="min-width:220px"><label>Cobrador</label><select><option>Todos</option>${COBR.map(c => `<option>${c.nombre}</option>`).join('')}</select></div></div>
+  <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px">
+    ${item('coins', 'yel', 'Recaudación diaria', 'Totales por día con QR, efectivo y deudas; listo para rendición de caja.')}
+    ${item('users', 'blue', 'Liquidación por cobrador', 'Lo que cobró cada trabajador, por turno y medio de pago.')}
+    ${item('pin', 'blue', 'Ocupación por zona', 'Uso de cada zona por hora y promedio de permanencia.')}
+    ${item('alert', 'red', 'Deudas pendientes', 'Placas que se retiraron sin pagar y deudas recuperadas.')}
+    ${item('list', 'green', 'Detalle de movimientos', 'Todos los registros con placa, horas, espacio y N° de operación.')}
+    ${item('send', 'yel', 'Envío automático', 'Programa el envío del resumen diario por correo a la gerencia.')}
+  </div>`;
+};
+
+/* ---------- Generales ---------- */
+let toastT;
+function toast(m){ const t = $('#toast'); t.innerHTML = ic('info', 18) + m; t.classList.add('on'); clearTimeout(toastT); toastT = setTimeout(() => t.classList.remove('on'), 2400); }
+const tema = () => { const dark = document.documentElement.dataset.theme === 'dark' || (!document.documentElement.dataset.theme && matchMedia('(prefers-color-scheme: dark)').matches); $('#theme').innerHTML = ic(dark ? 'sun' : 'moon'); };
+$('#theme').onclick = () => { const dark = document.documentElement.dataset.theme === 'dark' || (!document.documentElement.dataset.theme && matchMedia('(prefers-color-scheme: dark)').matches); document.documentElement.dataset.theme = dark ? 'light' : 'dark'; tema(); };
+/* Inicio de sesión (boceto: valida el formato y entra con datos de ejemplo) */
+$('#lgZonas').textContent = ZONAS.length; $('#lgEsp').textContent = ZONAS.reduce((s, z) => s + z.cap, 0);
+$('#lgDni').oninput = e => { e.target.value = e.target.value.replace(/\D/g, ''); e.target.closest('.lg-f').classList.remove('bad'); };
+$('#lgPass').oninput = e => e.target.closest('.lg-f').classList.remove('bad');
+$('#lgEye').onclick = () => { const p = $('#lgPass'), ver = p.type === 'password'; p.type = ver ? 'text' : 'password';
+  $('#lgEye').innerHTML = ic(ver ? 'eyeoff' : 'eye'); $('#lgEye').setAttribute('aria-label', ver ? 'Ocultar contraseña' : 'Mostrar contraseña'); $('#lgEye').title = $('#lgEye').getAttribute('aria-label'); };
+$('#lgOlv').onclick = () => toast('Pide a la Subgerencia de Transporte que restablezca tu contraseña');
+$('#lgForm').onsubmit = e => {
+  e.preventDefault();
+  const dniOk = /^\d{8}$/.test($('#lgDni').value), passOk = $('#lgPass').value.length > 0;
+  $('#lgDni').closest('.lg-f').classList.toggle('bad', !dniOk); $('#lgPass').closest('.lg-f').classList.toggle('bad', !passOk);
+  if (!dniOk) return $('#lgDni').focus(); if (!passOk) return $('#lgPass').focus();
+  const b = $('#lgBtn'); b.classList.add('busy'); b.querySelector('.tx').textContent = 'Verificando…';
+  setTimeout(() => { $('#login').classList.add('out'); b.classList.remove('busy'); b.querySelector('.tx').textContent = 'Ingresar al panel'; }, 750);
+};
+$('#logout').onclick = () => $('#login').classList.remove('out');
+$('#navDeu').textContent = T.filter(t => t.estado === 'pendiente').length;
+paint(); tema();
+if (location.hash.length > 1){ $('#login').classList.add('out'); $('#login').style.transition = 'none'; }
+go(location.hash.slice(1) || 'resumen');
+</script>
+</body>
+</html>
