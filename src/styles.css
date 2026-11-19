@@ -9,8 +9,8 @@
    6. Ajustes para pantallas pequeñas (@media max-width) al final de cada bloque.
    Variables principales: --primary azul, --yel amarillo, --ok verde, --bad rojo, --warn naranja,
    --surface fondo de tarjetas, --line bordes, --text / --text-2 / --text-3 textos de más a menos fuertes. */
-@font-face{font-family:"Fredoka";src:url("../../app-movil/recursos/fredoka-700.woff2") format("woff2");font-weight:300 700;font-display:block}
-@font-face{font-family:"Jakarta";src:url("../../app-movil/recursos/jakarta-800.woff2") format("woff2");font-weight:400 800;font-display:block}
+@font-face{font-family:"Fredoka";src:url("./recursos/fredoka-700.woff2") format("woff2");font-weight:300 700;font-display:block}
+@font-face{font-family:"Jakarta";src:url("./recursos/jakarta-800.woff2") format("woff2");font-weight:400 800;font-display:block}
 /* Panel de escritorio: barra lateral fija + contenido; colores de San Juan de Lurigancho con azul y amarillo de Transporte */
 /* Colores del modo claro */
 :root{

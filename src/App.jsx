@@ -7,7 +7,7 @@ import Icon from './components/Icon.jsx';
 import Login from './components/Login.jsx';
 import { EASE, UI, Modal, Plate, PillEstado } from './components/ui.jsx';
 import { AHORA, T, ZONAS, ROLES, SESION_DEMO, hhmm, ini, money } from './data.js';
-import logo from '../../app-movil/recursos/logo-sjl.png';
+import logo from './recursos/logo-sjl.png';
 // Una pantalla por cada sección del menú (carpeta views/)
 import Resumen from './views/Resumen.jsx';
 import Vivo from './views/Vivo.jsx';

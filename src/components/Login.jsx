@@ -6,7 +6,7 @@ import { motion, AnimatePresence, useAnimate, useMotionValue, useSpring, useTran
 import Icon from './Icon.jsx';
 import { CountUp, EASE, useUI } from './ui.jsx';
 import { ZONAS, CAP, ROLES, SESION_DEMO, money } from '../data.js';
-import logo from '../../../app-movil/recursos/logo-sjl.png';
+import logo from '../recursos/logo-sjl.png';
 
 // Datos de las tarjetas decorativas: pagos que van rotando, espacios de una zona (o = ocupado, y = más de 2 h) y altura de las barras
 const PAGOS = [['ZKY-198', 1.6, 'Yape'], ['BPY-660', 2.4, 'Plin'], ['GRT-969', 0.8, 'Efectivo'], ['HCR-998', 3.2, 'Yape']];
