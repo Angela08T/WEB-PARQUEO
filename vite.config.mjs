@@ -10,5 +10,5 @@ export default defineConfig({
   base: './',
   plugins: [react(), viteSingleFile()],
   build: { outDir: dir + '/dist', emptyOutDir: true, assetsInlineLimit: 100_000_000 },
-  server: { fs: { allow: [dir + '/..'] } }
+  server: { fs: { allow: [dir] } }
 });
