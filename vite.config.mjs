@@ -1,4 +1,4 @@
-// Compila src/ a dist/index.html (construir.js lo copia a panel-admin/index.html): un solo archivo con JS, CSS, logo y tipografías
+// Compila src/ a dist/index.html (construir.js lo copia a index.html en la raíz): un solo archivo con JS, CSS, logo y tipografías
 // incluidos, para abrirlo con doble clic y sin conexión a internet.
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';

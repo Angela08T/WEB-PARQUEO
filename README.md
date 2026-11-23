@@ -6,7 +6,7 @@ Está hecho con **React 19 + Motion + Vite**.
 
 > SICOE tiene dos repositorios: este **panel web** y la **app de campo** de los cobradores
 > ([APP-SICOE](https://github.com/Angela08T/APP-SICOE)).
-> Documentación completa (instalación, manual de usuario y cómo funciona): [`docs/DOCUMENTACION.md`](docs/DOCUMENTACION.md).
+> Documentación completa (procesos, arquitectura, tecnologías, modelo de datos, manual de usuario y guía para desarrolladores): [`docs/DOCUMENTACION.md`](docs/DOCUMENTACION.md).
 
 Por ahora usa **datos de ejemplo**; todavía no hay un servidor que lo conecte con la app.
 

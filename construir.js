@@ -1,4 +1,4 @@
-// Arma panel-admin/index.html a partir de src/ (React + Motion) con Vite, incluyendo logo y
+// Arma index.html (en la raíz) a partir de src/ (React + Motion) con Vite, incluyendo logo y
 // tipografías para que el panel funcione sin conexión. Uso: npm run build
 const { execSync } = require('child_process'), fs = require('fs'), path = require('path');
 const dir = __dirname;
